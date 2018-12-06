@@ -1,0 +1,4 @@
+rootProject.name = 'java-mqtt-sdk'
+
+include ':java-mqtt-sdk'
+include ':example-client'

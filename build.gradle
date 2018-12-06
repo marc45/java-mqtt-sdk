@@ -1,0 +1,101 @@
+subprojects {
+    apply plugin: 'application'
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    mainClassName = "ir.moke.dandelion.mqtt.MainClass"
+
+    group 'ir.moke.dandelion'
+    version '1.0-SNAPSHOT'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+    }
+
+    Map<String, String> attrs = [
+            "Created-By"              : "Mahdi Sheikh Hosseini",
+            "Implementation-Title"    : "Moke dandelion iot system",
+            "Implementation-Vendor"   : "Moke Software Inc",
+            "Implementation-Vendor-Id": "ir.moke.dandelion",
+            "Implementation-Version"  : version
+    ] as Map<String, String>
+
+    jar {
+        manifest {
+            attributes(attrs)
+        }
+    }
+}
+
+task deleteOutDirs(type: Delete) {
+    file(".").list().each {
+        if (it.startsWith("java") || it.startsWith("example")) {
+            def subDirName = it
+            file(it).list().each {
+                if (it == "out") {
+                    def outPath = subDirName + "/" + it
+                    println(outPath)
+                    delete outPath
+                }
+            }
+        }
+    }
+}
+
+task clean {
+    doLast {
+        deleteOutDirs
+    }
+}
+
+
+
+project(':java-mqtt-sdk') {
+
+    archivesBaseName = "java-mqtt-sdk"
+    version = "0.1"
+
+    jar {
+        manifest {
+            attributes(
+                    "Specification-Vendor": "Moke Software Inc",
+                    "Specification-Title": archivesBaseName,
+                    "Specification-Version": version,
+            )
+        }
+    }
+
+
+    dependencies {
+        compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
+        compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.0'
+    }
+}
+
+
+
+project(":example-client") {
+    archivesBaseName = "example-client"
+    version = "0.1"
+
+    jar {
+        manifest {
+            attributes(
+                    "Specification-Vendor": "Moke Software Inc",
+                    "Specification-Title": archivesBaseName,
+                    "Specification-Version": version,
+            )
+        }
+    }
+
+    dependencies {
+        compile project(':java-mqtt-sdk')
+    }
+}
