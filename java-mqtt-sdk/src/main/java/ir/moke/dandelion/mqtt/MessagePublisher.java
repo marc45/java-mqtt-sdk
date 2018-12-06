@@ -1,6 +1,7 @@
-package ir.moke.javaee.mqtt;
+/*
+package ir.moke.dandelion.mqtt;
 
-import ir.moke.javaee.web.HttpClient;
+import ir.moke.dandelion.web.HttpClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -51,4 +52,4 @@ public class MessagePublisher {
         Random random = new Random();
         return random.nextInt();
     }
-}
+}*/
