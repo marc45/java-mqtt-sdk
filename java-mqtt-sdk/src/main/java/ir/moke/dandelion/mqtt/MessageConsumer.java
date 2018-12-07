@@ -23,7 +23,7 @@ public class MessageConsumer {
             mqttClient.subscribe("device/mqtt", 2);
             logger.info("Connection established .");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.fine("Exception : " + e.getMessage());
         }
         return mqttClient;
     }

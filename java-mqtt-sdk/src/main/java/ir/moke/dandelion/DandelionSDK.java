@@ -31,14 +31,22 @@ public class DandelionSDK {
     }
 
     public void start() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
+        while (true) {
+            try {
+                init();
+                MqttClient mqttClient = MessageConsumer.connect(apiKey, endpoint);
+                if (mqttClient.isConnected()) {
+                    logger.info("Connection established .");
+                    while (mqttClient.isConnected()) {
+                    }
+                } else {
+                    DandelionCredentialFactory.destroyToken();
+                }
+            } catch (Exception e) {
+                logger.fine("Exception : " + e.getMessage());
+            }
+            sleep(5000);
         }
-        MqttClient mqttClient = MessageConsumer.connect(apiKey, endpoint);
-//        while (mqttClient.isConnected()) {
-//        }
     }
 
     public void stop() {
