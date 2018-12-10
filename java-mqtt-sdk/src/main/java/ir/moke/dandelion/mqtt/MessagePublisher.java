@@ -1,7 +1,7 @@
 package ir.moke.dandelion.mqtt;
 
-@FunctionalInterface
-public interface MessagePublisher<T> {
-
-   void apply(T t) ;
+public interface MessagePublisher {
+    static void apply(String message) {
+        MqttFactory.instance.send(message);
+    }
 }

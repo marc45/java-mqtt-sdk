@@ -10,7 +10,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.logging.Logger;
 
-public class MqttFactory implements Subject, MessagePublisher<String> {
+public class MqttFactory implements Subject {
 
     private static final Logger logger = LoggerProducer.produceLogger();
     private static MqttClient mqttClient;
@@ -28,7 +28,7 @@ public class MqttFactory implements Subject, MessagePublisher<String> {
             mqttClient = new MqttClient(endpoint, clientId);
             mqttClient.connect(getOptions(credential));
             mqttClient.setCallback(new MqttMessageListener());
-            mqttClient.subscribe("device/mqtt", 2);
+            mqttClient.subscribe("device/sample", 2);
             logger.info("Connection established .");
         } catch (Exception e) {
             logger.fine("Exception : " + e.getMessage());
@@ -49,7 +49,7 @@ public class MqttFactory implements Subject, MessagePublisher<String> {
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setUserName(credential.getAuth());
         connOpts.setPassword(credential.getAccessKey().toCharArray());
-        connOpts.setCleanSession(false);
+        connOpts.setCleanSession(true);
         connOpts.setAutomaticReconnect(false);
         return connOpts;
     }
@@ -70,18 +70,13 @@ public class MqttFactory implements Subject, MessagePublisher<String> {
 
     public void send(String message) {
         try {
-            MqttMessage mqttMessage = new MqttMessage(message.getBytes());
-            mqttMessage.setRetained(false);
-            mqttMessage.setQos(2);
+//            MqttMessage mqttMessage = new MqttMessage(message.getBytes());
+//            mqttMessage.setRetained(false);
+//            mqttMessage.setQos(2);
             final String topic = "mqtt";
-            mqttClient.publish(topic, mqttMessage);
+            mqttClient.publish(topic, message.getBytes(),2,false);
         } catch (MqttException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void apply(String msg) {
-        MqttFactory.instance.send(msg);
     }
 }

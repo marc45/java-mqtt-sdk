@@ -1,12 +1,11 @@
 package ir.moke.dandelion;
 
 import ir.moke.dandelion.logger.LoggerProducer;
-import ir.moke.dandelion.mqtt.MqttFactory;
 import ir.moke.dandelion.mqtt.MessageListener;
+import ir.moke.dandelion.mqtt.MqttFactory;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 public class DandelionSDK {
     private static final Logger logger = LoggerProducer.produceLogger();
@@ -26,27 +25,30 @@ public class DandelionSDK {
         MqttFactory.instance.registerMessageListener(messageListener);
     }
 
-    public void init() throws Exception {
+    private void init() throws Exception {
         DandelionCredentialFactory.initialize();
     }
 
-    public Stream<Void> start() {
-        while (true) {
-            try {
-                init();
-                MqttClient mqttClient = MqttFactory.instance.connect(apiKey, endpoint);
-                if (mqttClient.isConnected()) {
-                    logger.info("Connection established .");
-                    while (mqttClient.isConnected()) {
+    public void start() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    init();
+                    MqttClient mqttClient = MqttFactory.instance.connect(apiKey, endpoint);
+                    if (mqttClient.isConnected()) {
+                        logger.info("Connection established .");
+                        while (mqttClient.isConnected()) {
+                        }
+                    } else {
+                        DandelionCredentialFactory.destroyToken();
                     }
-                } else {
-                    DandelionCredentialFactory.destroyToken();
+                } catch (Exception e) {
+                    logger.fine("Exception : " + e.getMessage());
                 }
-            } catch (Exception e) {
-                logger.fine("Exception : " + e.getMessage());
+                sleep(5000);
             }
-            sleep(5000);
-        }
+        });
+        thread.start();
     }
 
     public void stop() {
