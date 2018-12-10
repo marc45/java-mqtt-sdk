@@ -5,15 +5,23 @@ import ir.moke.dandelion.logger.LoggerProducer;
 import ir.moke.dandelion.model.Credential;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.logging.Logger;
 
-public class MessageConsumer {
+public class MqttFactory implements Subject, MessagePublisher<String> {
 
     private static final Logger logger = LoggerProducer.produceLogger();
     private static MqttClient mqttClient;
+    private MessageListener messageListener;
 
-    public static MqttClient connect(String apiKey, String endpoint) {
+    public static final MqttFactory instance = new MqttFactory();
+
+    private MqttFactory() {
+    }
+
+    public MqttClient connect(String apiKey, String endpoint) {
         try {
             Credential credential = DandelionCredentialFactory.getCredential();
             final String clientId = apiKey + ":" + credential.getDeviceId();
@@ -28,7 +36,7 @@ public class MessageConsumer {
         return mqttClient;
     }
 
-    public static void disconnect() {
+    public void disconnect() {
         try {
             mqttClient.disconnect();
             mqttClient.close();
@@ -37,13 +45,43 @@ public class MessageConsumer {
         }
     }
 
-
-    private static MqttConnectOptions getOptions(Credential credential) {
+    private MqttConnectOptions getOptions(Credential credential) {
         MqttConnectOptions connOpts = new MqttConnectOptions();
         connOpts.setUserName(credential.getAuth());
         connOpts.setPassword(credential.getAccessKey().toCharArray());
         connOpts.setCleanSession(false);
         connOpts.setAutomaticReconnect(false);
         return connOpts;
+    }
+
+    @Override
+    public void registerMessageListener(Class<? extends MessageListener> listenerClass) {
+        try {
+            this.messageListener = listenerClass.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void notifyListener(String message) {
+        messageListener.onMessage(message);
+    }
+
+    public void send(String message) {
+        try {
+            MqttMessage mqttMessage = new MqttMessage(message.getBytes());
+            mqttMessage.setRetained(false);
+            mqttMessage.setQos(2);
+            final String topic = "mqtt";
+            mqttClient.publish(topic, mqttMessage);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void apply(String msg) {
+        MqttFactory.instance.send(msg);
     }
 }
